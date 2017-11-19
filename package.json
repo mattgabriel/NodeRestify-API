@@ -1,0 +1,38 @@
+{
+  "name": "node_api",
+  "version": "1.0.0",
+  "description": "NodeJS API",
+  "main": "dist/server.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build": "npm run tslint && npm run copy-static-assets && npm run build-ts",
+    "build-ts": "node_modules/typescript/bin/tsc",
+    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve\"",
+    "watch-ts": "node_modules/typescript/bin/tsc -w",
+    "tslint": "tslint -c tslint.json -p tsconfig.json",
+    "serve": "node dist/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "copy-static-assets": "node copyStaticAssets.js"
+  },
+  "author": "Matt Gabriel",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^4.0.0",
+    "restify": "^6.3.2",
+    "restify-cors-middleware": "^1.0.1",
+    "restify-plugins": "^1.6.0",
+    "serve-static-restify": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^4.0.2",
+    "@types/restify": "^5.0.6",
+    "@types/restify-cors-middleware": "^1.0.1",
+    "@types/restify-plugins": "^1.5.11",
+    "@types/typescript": "^2.0.0",
+    "shelljs": "^0.7.8",
+    "tslint": "^5.8.0",
+    "typescript": "^2.6.1"
+  }
+}
