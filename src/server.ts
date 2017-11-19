@@ -9,12 +9,12 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 console.log(process.env.POSTGRESQL_HOST);
-console.log(process.env.SOME_TEST);
+console.log(process.env.ENV);
 
 
 const cors = corsMiddleware({
 	preflightMaxAge: 5, // optional
-	origins: ["*"], // ['http://*.tracktics.com', 'https://*.tracktics.com'],
+	origins: ["*"], // ['http://*.xx.com', 'https://*.xx.com'],
 	allowHeaders: ["*"], // ['API-Token'],
 	exposeHeaders: ["*"], // ['API-Token-Expiry']
 });
@@ -36,6 +36,7 @@ server.use(restifyPlugins.acceptParser(server.acceptable));
 server.use(restifyPlugins.queryParser({ mapParams: true }));
 server.use(restifyPlugins.fullResponse());
 
+
 /**
  * Serve static page (ie. docs)
  */
@@ -46,10 +47,6 @@ server.get(
 		default: "index.html"
 	})
 );
-
-/**
- * Block comment
- */
 
 
 /**
