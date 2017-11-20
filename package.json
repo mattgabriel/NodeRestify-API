@@ -20,6 +20,7 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^4.0.0",
+    "fs": "0.0.1-security",
     "restify": "^6.3.2",
     "restify-cors-middleware": "^1.0.1",
     "restify-plugins": "^1.6.0",
