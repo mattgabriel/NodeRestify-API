@@ -1,0 +1,11 @@
+{
+  "name": "API",
+  "version": "3.0.0",
+  "description": "RESTful API",
+  "title": "API V3.0",
+  "url" : "http://localhost:3000",
+  "sampleUrl" : "/api3",
+  "template" : {
+  	"forceLanguage" : "en"
+  }
+}

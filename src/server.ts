@@ -1,17 +1,15 @@
 "use strict";
 
-import * as conf from "./config/config";
 import * as restify from "restify";
 import * as restifyPlugins from "restify-plugins";
 import * as corsMiddleware from "restify-cors-middleware";
 import * as serveStatic from "serve-static-restify";
-import * as dotenv from "dotenv";
 import * as fs from "fs";
+import * as conf from "./config/config";
 
-dotenv.config();
-console.log(process.env.POSTGRESQL_HOST);
-console.log(process.env.ENV);
-
+console.log("┌-----------------------------------");
+console.log(`| Env: ${process.env.API_ENV}`);
+console.log(`| URL: ${conf.config.base_url}:${conf.config.port}`);
 
 const cors = corsMiddleware({
 	preflightMaxAge: 5, // optional
@@ -30,6 +28,7 @@ const server = restify.createServer({
 /**
  * Middleware
  */
+server.pre(restify.pre.sanitizePath());
 server.pre(cors.preflight);
 server.use(cors.actual);
 server.use(restifyPlugins.jsonBodyParser({ mapParams: true }));
@@ -48,7 +47,7 @@ fs.readdirSync(__dirname + "/routes").forEach(function (routeConfig: string) {
  * Serve static page (ie. docs)
  */
 server.get(
-	/\/*/,
+	/^\/?.*/,
 	restify.plugins.serveStatic({
 		directory: __dirname + "/public",
 		default: "index.html"
@@ -60,5 +59,6 @@ server.get(
  * Start server
  */
 server.listen(conf.config.port, function() {
-	console.log(`Server is listening on port ${conf.config.port}`);
+	console.log(`| Server is listening on port ${conf.config.port}`);
+	console.log("└-----------------------------------");
 });

@@ -9,7 +9,7 @@ https://github.com/Microsoft/TypeScript-Node-Starter#typescript-node-starter
 
 
 
-### Install Sublime plugin:
+### Install Sublime plugin (optional):
 
 Enable Package Control via tools > developer
 
@@ -34,6 +34,8 @@ To run it: `tslint -c tslint.json -p tsconfig.json`
 ### Dependencies
 
 `npm install -g concurrently`
+
+`npm install apidoc -g`
 
 `npm install`
 

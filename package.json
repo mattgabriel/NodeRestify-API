@@ -14,7 +14,8 @@
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "serve": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "copy-static-assets": "node copyStaticAssets.js"
+    "copy-static-assets": "node copyStaticAssets.js",
+    "docs": "apidoc -i src/routes/ -o src/public/docs"
   },
   "author": "Matt Gabriel",
   "license": "ISC",

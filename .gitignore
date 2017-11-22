@@ -10,3 +10,6 @@ Thumbs.db
 
 # Ignore built ts files
 dist/**/*
+
+# Ignore docs
+src/public/docs/*
