@@ -22,15 +22,19 @@
   "dependencies": {
     "dotenv": "^4.0.0",
     "fs": "0.0.1-security",
+    "jwt-simple": "^0.5.1",
     "restify": "^6.3.2",
     "restify-cors-middleware": "^1.0.1",
+    "restify-jwt": "^0.4.0",
     "restify-plugins": "^1.6.0",
     "serve-static-restify": "^2.0.0"
   },
   "devDependencies": {
     "@types/dotenv": "^4.0.2",
+    "@types/jwt-simple": "^0.5.33",
     "@types/restify": "^5.0.6",
     "@types/restify-cors-middleware": "^1.0.1",
+    "@types/restify-errors": "^4.3.2",
     "@types/restify-plugins": "^1.5.11",
     "@types/typescript": "^2.0.0",
     "shelljs": "^0.7.8",

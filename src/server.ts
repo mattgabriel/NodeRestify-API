@@ -6,6 +6,8 @@ import * as corsMiddleware from "restify-cors-middleware";
 import * as serveStatic from "serve-static-restify";
 import * as fs from "fs";
 import * as conf from "./config/config";
+const jwt = require("restify-jwt");
+
 
 console.log("┌-----------------------------------");
 console.log(`| Env: ${process.env.API_ENV}`);
@@ -24,16 +26,23 @@ const server = restify.createServer({
 	version: conf.config.version
 });
 
-
 /**
  * Middleware
  */
-server.pre(restify.pre.sanitizePath());
+// server.pre(restify.pre.sanitizePath());
 server.pre(cors.preflight);
 server.use(cors.actual);
-server.use(restifyPlugins.jsonBodyParser({ mapParams: true }));
+// server.use(jwt({
+// 	secret: conf.config.authSecret,
+// 	credentialsRequired: false
+// }).unless({
+// 	path: [
+// 		conf.config.basePath("/ping")
+// 	]
+// }));
 server.use(restifyPlugins.acceptParser(server.acceptable));
 server.use(restifyPlugins.queryParser({ mapParams: true }));
+server.use(restifyPlugins.jsonBodyParser({ mapParams: true }));
 server.use(restifyPlugins.fullResponse());
 
 fs.readdirSync(__dirname + "/routes").forEach(function (routeConfig: string) {

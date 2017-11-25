@@ -14,6 +14,7 @@ if (environments.indexOf(env) === -1) {
 export const config = {
 	name: process.env.API_NAME || "API",
 	version: process.env.API_VERSION || "3.0.0",
+	authSecret: process.env.API_AUTH_SECRET || "mySecretAuthKey",
 	env: env,
 	port: process.env.API_PORT || 3000,
 	base_url: process.env.BASE_URL || "http://localhost",
@@ -27,5 +28,8 @@ export const config = {
 	redis: {
 		host: process.env.API_REDIS_HOST || "",
 		port: process.env.API_REDIS_PORT || ""
+	},
+	basePath: (path: String) => {
+		return "/" + path.replace(/^\//, "");
 	}
 };
