@@ -1,29 +1,19 @@
 import * as restify from "restify";
 import { ApiError, ErrorCode, ErrorMsg } from "../helpers/apiErrors";
 import { Auth } from "../services/authService";
+const authService = new Auth();
 
 export default class AuthController {
 
-	/**
-	 *
-	 * curl -X GET "http://localhost:3000/auth?token=myToken"
-	 * curl -X GET "http://localhost:3000/auth" -d '{"token":"myToken"}' -H 'Content-Type: application/json'
-	 * curl -X GET "http://localhost:3000/auth" -H "AUTHORIZATION: Bearer myToken"
-	 *
-	 */
-	public get(req: restify.Request, res: restify.Response, next: restify.Next) {
-		res.json(200, {"message": "GET "});
-		return next();
-	}
 
 	/**
 	 *
 	 * curl -X POST "http://localhost:3000/auth/accessToken" -H 'AUTHORIZATION: Bearer <refreshToken>'
+	 * curl -X POST "http://localhost:3000/auth/accessToken" -d '{"refreshToken": <refreshToken>}'
 	 * curl -H 'Content-Type: Application/json' -X POST "http://localhost:3000/auth/login" -d '{"email":"ms@gmx.de","password":"c21f969b5f03d33d43e04f8f136e7682"}'
 	 *
 	 */
 	public post(req: restify.Request, res: restify.Response, next: restify.Next) {
-		const authService = new Auth();
 		authService.authenticate(req, res, function(success: boolean, error: ApiError) {
 			if (success) {
 				const response = {
@@ -43,6 +33,11 @@ export default class AuthController {
 				return next(error);
 			}
 		});
+	}
+
+	public get(req: restify.Request, res: restify.Response, next: restify.Next) {
+		res.json(200, {good: "trueThat"});
+		return next();
 	}
 
 	public patch(req: restify.Request, res: restify.Response, next: restify.Next) {

@@ -30,10 +30,10 @@ export class Auth {
 	authenticate(req: restify.Request, res: restify.Response, callback: (success: boolean, error?: any, response?: any) => void): void {
 		const _this = this;
 
-		if (req.headers.authorization) {
+		if (req.body && req.body.refreshToken) {
 			// With refresh token
 			try {
-				const refresh_token = this.parseBearerToken(req);
+				const refresh_token = req.body.refreshToken;
 				try {
 					const validated = this.validateRefreshToken(refresh_token);
 					this._accessToken = this.token.generateAccessToken(this._refreshTokenObject.userId);
@@ -62,6 +62,31 @@ export class Auth {
 					callback(false, ApiError.httpResponse(ErrorMsg.Auth_InvalidCredentials, ErrorCode.UnauthorizedError) );
 				}
 			});
+		} else {
+			callback(false, ApiError.httpResponse(ErrorMsg.Auth_InsufficientParameters, ErrorCode.UnauthorizedError) );
+		}
+	}
+
+	validateAccessToken(req: restify.Request, callback: (success: boolean, error?: any, response?: any) => void): void {
+		if (req.headers.authorization) {
+			// With refresh token
+			try {
+				const refresh_token = this.parseBearerToken(req);
+				try {
+					const validated = this.validateRefreshToken(refresh_token);
+					this._accessToken = this.token.generateAccessToken(this._refreshTokenObject.userId);
+					this._userId = this._refreshTokenObject.userId;
+					// this.useRole = this._refreshTokenObject.userRole;
+					// contains the same refresh token as provided by the user
+					// no need to create a new refresh token a
+					this._refreshToken = refresh_token;
+					callback(true);
+				} catch (err) {
+					callback(false, ApiError.httpResponse(err, ErrorCode.UnauthorizedError) );
+				}
+			} catch (err) {
+				callback(false, ApiError.httpResponse(ErrorMsg.Auth_InvalidCredentials, ErrorCode.UnauthorizedError) );
+			}
 		} else {
 			callback(false, ApiError.httpResponse(ErrorMsg.Auth_InsufficientParameters, ErrorCode.UnauthorizedError) );
 		}
@@ -111,5 +136,27 @@ export class Auth {
 			throw err;
 		}
 	}
-
 }
+
+
+export class AuthMiddleware {
+
+	/**
+	 *
+	 * Treated as middleware
+	 * Routes that need validating the access token in order to continue
+	 * will call this method which if the token is invalid will continue to the next route
+	 * or if invalid it will return a HTTP Unauthorized error
+	 *
+	 */
+	static validateAccessToken(req: restify.Request, res: restify.Response, next: restify.Next): void {
+		const auth = new Auth();
+		auth.validateAccessToken(req, function(success: boolean, error: ApiError) {
+			if (!success) {
+				return next(error);
+			}
+			return next();
+		});
+	}
+}
+
