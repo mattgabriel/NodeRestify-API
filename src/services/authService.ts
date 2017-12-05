@@ -3,7 +3,7 @@ import * as restify from "restify";
 import * as jwt from "jwt-simple";
 import { Token } from "../models/authModel";
 import { TokenObject } from "../models/authModel";
-import { ApiError, ErrorCode } from "../helpers/apiErrors";
+import { ApiError, ErrorCode, ErrorMsg } from "../helpers/apiErrors";
 import { AuthEntity } from "../entities/authEntity";
 
 
@@ -20,8 +20,8 @@ export class Auth {
 
 	// token: string;
 	private token: Token = new Token;
-	private userId: string;
-	private userRole: number;
+	private _userId: string;
+	private _userRole: number;
 	private _refreshTokenObject: TokenObject;
 	private _accessToken: string;
 	private _accessTokenExpiration: number = conf.config.accessTokenLifespan;
@@ -37,6 +37,8 @@ export class Auth {
 				try {
 					const validated = this.validateRefreshToken(refresh_token);
 					this._accessToken = this.token.generateAccessToken(this._refreshTokenObject.userId);
+					this._userId = this._refreshTokenObject.userId;
+					// this.useRole = this._refreshTokenObject.userRole;
 					// contains the same refresh token as provided by the user
 					// no need to create a new refresh token a
 					this._refreshToken = refresh_token;
@@ -45,23 +47,23 @@ export class Auth {
 					callback(false, ApiError.httpResponse(err, ErrorCode.UnauthorizedError) );
 				}
 			} catch (err) {
-				callback(false, ApiError.httpResponse(ApiError.Auth.InvalidCredentials, ErrorCode.UnauthorizedError) );
+				callback(false, ApiError.httpResponse(ErrorMsg.Auth_InvalidCredentials, ErrorCode.UnauthorizedError) );
 			}
 
 		} else if (req.body && req.body.email && req.body.password ) {
-			AuthEntity.validateCredentials(req.body.email, req.body.password, function(success: boolean, error: string) {
+			AuthEntity.validateCredentials(req.body.email, req.body.password, function(success: boolean, error: string, userId?: string, userRole?: number) {
 				if (success) {
+					_this._userId = userId as string;
+					_this._userRole = userRole as number;
 					_this._refreshToken = _this.token.generateRefreshToken(_this.userId);
 					_this._accessToken = _this.token.generateAccessToken(_this.userId);
-					// this.userId = details.userId as string;
-					// this.userRole = details.userRole as number;
 					callback(true);
 				} else {
-					callback(false, ApiError.httpResponse(ApiError.Auth.InvalidCredentials, ErrorCode.UnauthorizedError) );
+					callback(false, ApiError.httpResponse(ErrorMsg.Auth_InvalidCredentials, ErrorCode.UnauthorizedError) );
 				}
 			});
 		} else {
-			callback(false, ApiError.httpResponse(ApiError.Auth.InsufficientParameters, ErrorCode.UnauthorizedError) );
+			callback(false, ApiError.httpResponse(ErrorMsg.Auth_InsufficientParameters, ErrorCode.UnauthorizedError) );
 		}
 	}
 
@@ -81,6 +83,10 @@ export class Auth {
 		return this._refreshTokenObject;
 	}
 
+	get userId() {
+		return this._userId;
+	}
+
 	private parseBearerToken(req: restify.Request): string {
 		if (req.headers.authorization) {
 			const auth = req.headers.authorization as string;
@@ -88,7 +94,7 @@ export class Auth {
 				return auth.split(" ")[1];
 			}
 		}
-		throw ApiError.Auth.MissingToken;
+		throw ErrorMsg.Auth_MissingToken;
 	}
 
 	private validateRefreshToken(refresh_token: string): boolean {
@@ -99,7 +105,7 @@ export class Auth {
 				this._refreshTokenObject = tokenObj;
 				return true;
 			}
-			throw ApiError.Auth.ExpiredToken;
+			throw ErrorMsg.Auth_ExpiredToken;
 		} catch (err) {
 			// invalid refresh_token (can't decode)
 			throw err;

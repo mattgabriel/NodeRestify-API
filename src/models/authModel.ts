@@ -1,9 +1,8 @@
 import * as conf from "../config/config";
 import * as restify from "restify";
-import * as errors from "restify-errors";
 import * as jwt from "jwt-simple";
 import { Random } from "../helpers/random";
-import { ApiError, ErrorCode } from "../helpers/apiErrors";
+import { ApiError, ErrorCode, ErrorMsg } from "../helpers/apiErrors";
 
 
 export class TokenObject {
@@ -20,7 +19,7 @@ export class TokenObject {
 		this.jti = tokenId;
 		this.iat = issueDate;
 		this.exp = expiryDate;
-		this.userId = userId;
+		this.userId = userId || "noUsr";
 		this.isRefreshToken = isRefreshToken;
 	}
 
@@ -56,9 +55,9 @@ export class Token {
 			}
 		} catch (err) {
 			if (err.message === "Token expired") {
-				throw ApiError.Auth.ExpiredToken;
+				throw ErrorMsg.Auth_ExpiredToken;
 			} else {
-				throw ApiError.Auth.InvalidToken;
+				throw ErrorMsg.Auth_InvalidToken;
 			}
 		}
 	}
@@ -93,7 +92,7 @@ export class Token {
 			}
 			return new TokenObject(decoded.jti, decoded.userId, decoded.iss, decoded.iat, decoded.exp, isRefreshToken);
 		}
-		throw ApiError.Auth.UnadaptableToken;
+		throw ErrorMsg.Auth_UnadaptableToken;
 	}
 
 }

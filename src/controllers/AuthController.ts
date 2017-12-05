@@ -1,5 +1,5 @@
 import * as restify from "restify";
-import { ApiError, ErrorCode } from "../helpers/apiErrors";
+import { ApiError, ErrorCode, ErrorMsg } from "../helpers/apiErrors";
 import { Auth } from "../services/authService";
 
 export default class AuthController {
@@ -30,25 +30,19 @@ export default class AuthController {
 					tokenType: "bearer",
 					accessToken: authService.accessToken,
 					expiresIn: authService.accessTokenExpiration,
-					refreshToken: authService.refreshToken
+					refreshToken: authService.refreshToken,
+					userId: authService.userId
 				};
 				res.json(200, response);
 
 				return next();
 			} else {
+				// if there is an error
+				// the service wil return an instance of ApiError that contains
+				// a restify-error object which handles error responses
 				return next(error);
 			}
 		});
-		// if it fails, the service will handle the 4xx or 5xx response
-		// so there's nothing else to do here
-
-		// res.json(401, {"message": "POST 401"});
-		// return next();
-
-		// const err = new errors.PaymentRequiredError("Pay up!");
-		// return next(err);
-		// res.json(200, {"message": "POST "});
-		// return next();
 	}
 
 	public patch(req: restify.Request, res: restify.Response, next: restify.Next) {

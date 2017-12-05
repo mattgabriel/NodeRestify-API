@@ -1,22 +1,31 @@
 import * as errors from "restify-errors";
 
-class RestError {
+/**
+ *
+ * All possible error messages that will be returned in the error response
+ *
+ */
+export enum ErrorMsg {
+	// General errors
+	General_DatabaseError = "DatabaseError",
 
-	static General = {
-		DatabaseError: "DatabaseError",
-	};
-
-	static Auth = {
-		InvalidToken: "InvalidToken",
-		MissingToken: "MissingToken",
-		UnadaptableToken: "UnadaptableToken",
-		ExpiredToken: "ExpiredToken",
-		InsufficientParameters: "InsufficientParameters",
-		InvalidCredentials: "InvalidCredentials",
-	};
-
+	// Authentication errors
+	Auth_InvalidToken = "InvalidToken",
+	Auth_MissingToken = "MissingToken",
+	Auth_UnadaptableToken = "UnadaptableToken",
+	Auth_ExpiredToken = "ExpiredToken",
+	Auth_InsufficientParameters = "InsufficientParameters",
+	Auth_InvalidCredentials = "InvalidCredentials",
 }
 
+
+/**
+ *
+ * Needs to exist in restify-errors
+ * Will be returned in the erorr response alongside
+ * its corresponding error code (401, 402...)
+ *
+ */
 export enum ErrorCode {
 	BadRequestError,
 	UnauthorizedError,
@@ -27,11 +36,20 @@ export enum ErrorCode {
 	ServiceUnavailableError
 }
 
-export class ApiError extends RestError {
 
-	static httpResponse(message: string, restifyError: ErrorCode): any {
+/**
+ *
+ * ApiError is in charge or building the error responses for you
+ * it simply takes restify error code and an error message.
+ * when a controller receives a callback with success=false and error=ApiError()
+ * it will pass it on to next() return the error response to the client
+ *
+ */
+export class ApiError {
 
-		switch (restifyError) {
+	static httpResponse(message: ErrorMsg, errorCode: ErrorCode): any {
+
+		switch (errorCode) {
 			case ErrorCode.BadRequestError:
 				return new errors.BadRequestError(message);
 			case ErrorCode.UnauthorizedError:
