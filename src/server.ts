@@ -6,6 +6,7 @@ import * as corsMiddleware from "restify-cors-middleware";
 import * as serveStatic from "serve-static-restify";
 import * as fs from "fs";
 import * as conf from "./config/config";
+import { sequelize } from "./config/sequelize";
 const jwt = require("restify-jwt");
 
 
@@ -21,53 +22,68 @@ const cors = corsMiddleware({
 });
 
 
-const server = restify.createServer({
-	name: conf.config.name,
-	version: conf.config.version
-});
+(async () => {
 
-/**
- * Middleware
- */
-// server.pre(restify.pre.sanitizePath());
-server.pre(cors.preflight);
-server.use(cors.actual);
-// server.use(jwt({
-// 	secret: conf.config.authSecret,
-// 	credentialsRequired: false
-// }).unless({
-// 	path: [
-// 		conf.config.basePath("/ping")
-// 	]
-// }));
-server.use(restifyPlugins.acceptParser(server.acceptable));
-server.use(restifyPlugins.queryParser({ mapParams: true }));
-server.use(restifyPlugins.jsonBodyParser({ mapParams: true }));
-server.use(restifyPlugins.fullResponse());
-
-fs.readdirSync(__dirname + "/routes").forEach(function (routeConfig: string) {
-	if (routeConfig.substr(-3) === ".js") {
-		const route = require(__dirname + "/routes/" + routeConfig);
-		route.routes(server);
-	}
-});
-
-/**
- * Serve static page (ie. docs)
- */
-server.get(
-	/^\/?.*/,
-	restify.plugins.serveStatic({
-		directory: __dirname + "/public",
-		default: "index.html"
-	})
-);
+	/**
+	 * Connect to PostgreSQL:
+	 * await sequelize;
+	 *
+	 * Connect and authenticate
+	 * await sequelize.authenticate()
+	 *
+	 * Connect and synchronise with your models.
+	 * await sequelize.sync()
+	 *  NOTE: this will create new tables if they don't exit
+	 *
+	 * Connect and synchronise with your models (Force)
+	 * await sequelize.sync({ force: true })
+	 *  NOTE: this will drop all tables and data then create the tables again
+	 */
+	await sequelize;
 
 
-/**
- * Start server
- */
-server.listen(conf.config.port, function() {
-	console.log(`| Server is listening on port ${conf.config.port}`);
-	console.log("└-----------------------------------");
-});
+	// Create server instance
+	const server = restify.createServer({
+		name: conf.config.name,
+		version: conf.config.version
+	});
+
+	/**
+	 * Middleware
+	 */
+	server.pre(restify.pre.sanitizePath());
+	server.pre(cors.preflight);
+	server.use(cors.actual);
+	server.use(restifyPlugins.acceptParser(server.acceptable));
+	server.use(restifyPlugins.queryParser({ mapParams: true }));
+	server.use(restifyPlugins.jsonBodyParser({ mapParams: true }));
+	server.use(restifyPlugins.fullResponse());
+
+	fs.readdirSync(__dirname + "/routes").forEach(function (routeConfig: string) {
+		if (routeConfig.substr(-3) === ".js") {
+			const route = require(__dirname + "/routes/" + routeConfig);
+			route.routes(server);
+		}
+	});
+
+	/**
+	 * Serve static page (ie. docs)
+	 */
+	server.get(
+		/^\/?.*/,
+		restify.plugins.serveStatic({
+			directory: __dirname + "/public",
+			default: "index.html"
+		})
+	);
+
+
+	/**
+	 * Start server
+	 */
+	server.listen(conf.config.port, function() {
+		console.log(`| Server is listening on port ${conf.config.port}`);
+		console.log("└-----------------------------------");
+	});
+
+})();

@@ -49,6 +49,51 @@ To run it: `tslint -c tslint.json -p tsconfig.json`
 
 
 
+### Lifescyle
+
+*Route*: 
+
+- Requested by clients
+
+- Calls a Controller
+
+- Many Routes can call the same Controller
+
+
+*Controller*:
+
+- Authenticates the user
+
+- Calls a Service
+
+- Specifies and sends the response
+
+
+*Service*:
+
+- Business logic
+
+- Calls Models, Helpers and Entities
+
+
+*Model*:
+
+- Object
+
+
+*Helpers*:
+
+- Perform a small task
+
+- Abstract methods
+
+
+*Entity*:
+
+- Database queries
+
+
+
 
 
 

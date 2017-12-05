@@ -2,120 +2,98 @@ import * as conf from "../config/config";
 import * as restify from "restify";
 import * as errors from "restify-errors";
 import * as jwt from "jwt-simple";
+import { Random } from "../helpers/random";
+import { ApiError, ErrorCode } from "../helpers/apiErrors";
 
 
-class TokenObject {
+export class TokenObject {
 
-	private _userId: string;
-	private _issueDate: Date;
-	private _expiryDate: Date;
-	private _isRefreshToken: boolean;
+	readonly iss: string; // issuer
+	readonly jti: string; // token ID
+	readonly iat: number; // issue timestamp
+	readonly exp: number; // expiration timestamp
+	readonly userId: string;
+	readonly isRefreshToken: boolean;
 
-	constructor(userId: string, issueDate: Date,
-		expiryDate: Date, isRefreshToken: boolean = false) {
-
-		this._userId = userId;
-		this._issueDate = issueDate;
-		this._expiryDate = expiryDate;
-		this._isRefreshToken = isRefreshToken;
+	constructor(tokenId: string, userId: string, issuer: string, issueDate: number, expiryDate: number, isRefreshToken: boolean = false) {
+		this.iss = issuer;
+		this.jti = tokenId;
+		this.iat = issueDate;
+		this.exp = expiryDate;
+		this.userId = userId;
+		this.isRefreshToken = isRefreshToken;
 	}
 
-	get userId(): string {
-		return this._userId;
+	isExpired(): boolean {
+		const currentDate = Math.floor(Date.now() / 1000);
+		if (this.exp > currentDate) {
+			return false;
+		}
+		return true;
 	}
-
-	get issueDate(): Date {
-		return this._issueDate;
-	}
-
-	get expiryDate(): Date {
-		return this._expiryDate;
-	}
-
-	get isRefreshToken(): boolean {
-		return this._isRefreshToken;
-	}
-
 }
 
 
-class Token {
+export class Token {
+
+	// must not change until full API migration is completed
+	private issuer: string = "http://tracktics.zone";
+
 
 	encode(token: TokenObject): string {
-		return "test";
+		const encoded = jwt.encode(token, conf.config.authSecret);
+		return encoded;
 	}
 
 	decode(token: string): TokenObject {
 		try {
-			const dec = jwt.decode(token, conf.config.authSecret);
-			return new TokenObject("matt12", new Date(), new Date());
-		} catch (err) {
-			throw "InvalidToken";
-		}
-	}
-}
-
-
-/**
- *
- * Look for a token in the request
- * If not found kill the request and responde with a http error
- * Otherwise decode it and:
- *  - If valid return success
- *  - If invalid return the error
- *
- */
-export class Auth {
-
-	token: string;
-
-	authenticate(req: restify.Request, res: restify.Response, next: restify.Next): boolean {
-		if (this.parseToken(req)) {
-			const tok = new Token();
+			const decoded = jwt.decode(token, conf.config.authSecret);
 			try {
-				const decoded = tok.decode(this.token);
-				console.log(decoded);
-				return true;
+				const adapted = this.adapt(decoded);
+				return adapted;
 			} catch (err) {
-				next(new errors.UnauthorizedError(err));
-				return false;
+				throw err;
 			}
-		} else {
-			next(new errors.UnauthorizedError("NoTokenFound"));
-			return false;
+		} catch (err) {
+			if (err.message === "Token expired") {
+				throw ApiError.Auth.ExpiredToken;
+			} else {
+				throw ApiError.Auth.InvalidToken;
+			}
 		}
 	}
 
-	login(req: restify.Request, res: restify.Response, next: restify.Next): boolean {
-		return true;
+	generateAccessToken(userId: string): string {
+		const token = new TokenObject(
+			Random.string(8),
+			userId,
+			this.issuer,
+			Math.floor(Date.now() / 1000),
+			Math.floor(Date.now() / 1000) + conf.config.accessTokenLifespan,
+			false);
+		return this.encode(token);
 	}
 
-	private parseToken(req: restify.Request): boolean {
-		if (req.headers.authorization != undefined) {
-			// First look for it in the header
-			const authorization = req.headers.authorization as string;
-			if (authorization.split(" ")[0] === "Bearer") {
-				this.token = authorization.split(" ")[1];
-				return true;
+	generateRefreshToken(userId: string): string {
+		const token = new TokenObject(
+			Random.string(8),
+			userId,
+			this.issuer,
+			Math.floor(Date.now() / 1000),
+			Math.floor(Date.now() / 1000) + conf.config.refreshTokenLifespan,
+			true);
+		return this.encode(token);
+	}
+
+	private adapt(decoded: any): TokenObject {
+		if (decoded.iss && decoded.jti && decoded.iat && decoded.exp && decoded.userId) {
+			let isRefreshToken: boolean = false;
+			if (decoded.isRefreshToken) {
+				isRefreshToken = decoded.isRefreshToken as boolean;
 			}
-		} else if (req.query && req.query.token) {
-			// Then look for it in the query string
-			this.token = req.query.token;
-			return true;
-		} else if (req.body && req.body.token) {
-			// And finaly try in the body
-			this.token = req.body.token;
-			return true;
+			return new TokenObject(decoded.jti, decoded.userId, decoded.iss, decoded.iat, decoded.exp, isRefreshToken);
 		}
-		// No token found anywhere in the request
-		return false;
+		throw ApiError.Auth.UnadaptableToken;
 	}
 
 }
-
-
-
-
-
-
-
