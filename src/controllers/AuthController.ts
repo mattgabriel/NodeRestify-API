@@ -8,8 +8,8 @@ export default class AuthController {
 
 	/**
 	 *
-	 * curl -X POST "http://localhost:3000/auth/accessToken" -H 'AUTHORIZATION: Bearer <refreshToken>'
-	 * curl -X POST "http://localhost:3000/auth/accessToken" -d '{"refreshToken": <refreshToken>}'
+	 * curl -H 'Content-Type: Application/json' -X GET "http://localhost:3000/anythingElse" -H 'AUTHORIZATION: Bearer <accessToken>'
+	 * curl -H 'Content-Type: Application/json' -X POST "http://localhost:3000/auth/accessToken" -d '{"refreshToken": <refreshToken>}'
 	 * curl -H 'Content-Type: Application/json' -X POST "http://localhost:3000/auth/login" -d '{"email":"ms@gmx.de","password":"c21f969b5f03d33d43e04f8f136e7682"}'
 	 *
 	 */
@@ -28,7 +28,7 @@ export default class AuthController {
 				return next();
 			} else {
 				// if there is an error
-				// the service wil return an instance of ApiError that contains
+				// the service will return an instance of ApiError that contains
 				// a restify-error object which handles error responses
 				return next(error);
 			}

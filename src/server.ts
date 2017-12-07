@@ -36,11 +36,10 @@ const cors = corsMiddleware({
 	 *  NOTE: this will create new tables if they don't exit
 	 *
 	 * Connect and synchronise with your models (Force)
-	 * await sequelize.sync({ force: true })
+	 * await sequelize.sync({ force: true });
 	 *  NOTE: this will drop all tables and data then create the tables again
 	 */
 	await sequelize;
-
 
 	// Create server instance
 	const server = restify.createServer({
