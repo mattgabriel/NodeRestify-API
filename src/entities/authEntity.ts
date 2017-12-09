@@ -3,6 +3,7 @@ import { ApiError, ErrorCode, ErrorMsg } from "../helpers/apiErrors";
 import { Dates } from "../helpers/dates";
 import { Users } from "../db/Users";
 import { AuthTokens } from "../db/AuthTokens";
+import { UserTokens } from "../db/UserTokens"; // Legacy
 
 export class AuthEntity {
 
@@ -59,11 +60,37 @@ export class AuthEntity {
 	 *
 	 */
 
-	static storeRefreshToken(userId: string, tokenId: string, callback: (s: boolean, e?: ErrorMsg) => void): void {
+	static storeRefreshToken(userId: string, tokenId: string, tokenIdLegacy: string, callback: (s: boolean, e?: ErrorMsg) => void): void {
 		const create = AuthTokens.create({
 			UserId: userId,
 			TokenId: tokenId,
 			Created: Dates.now(),
+			Expiry: Dates.nowPlusSeconds(60 * 60 * 24 * 365) // 1 year in the future
+		}).then(function(row) {
+
+			// legacy call, can be removed once API v2 is no longer in use
+			AuthEntity.storeRefreshTokenLegacy(userId, tokenIdLegacy, function(s: boolean, e?: ErrorMsg) {
+				if (s) return callback(true);
+				return callback(false, e);
+			});
+
+		}).catch(function(err) {
+			callback(false, ErrorMsg.General_DatabaseError);
+		});
+	}
+
+
+	/**
+	 *
+	 * API v2 needs the tokens to be stored on another table
+	 * as soon as API v2 is no longer in use we can remove this method
+	 *
+	 */
+
+	static storeRefreshTokenLegacy(userId: string, tokenId: string, callback: (s: boolean, e?: ErrorMsg) => void): void {
+		const create = UserTokens.create({
+			UserId: userId,
+			TokenId: tokenId,
 			Expiry: Dates.nowPlusSeconds(60 * 60 * 24 * 365) // 1 year in the future
 		}).then(function(row) {
 			callback(true);

@@ -18,7 +18,6 @@ import { AuthEntity } from "../entities/authEntity";
  */
 export class Auth {
 
-	// token: string;
 	private token: Token = new Token;
 	private _userId: string;
 	private _userRole: number;
@@ -125,7 +124,8 @@ export class Auth {
 				_this._accessToken = _this.token.generateAccessToken(_this.userId);
 
 				const token = _this.token.decode(_this._refreshToken);
-				AuthEntity.storeRefreshToken(_this._userId, token.jti, function(s: boolean, e?: string) {
+				const tokenLegacy = _this.token.decode(_this._accessToken);
+				AuthEntity.storeRefreshToken(_this._userId, token.jti, tokenLegacy.jti, function(s: boolean, e?: string) {
 					if (s) return callback(true);
 					return callback(false, ErrorMsg.General_DatabaseError );
 				});

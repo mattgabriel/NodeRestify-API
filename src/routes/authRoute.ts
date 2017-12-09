@@ -26,23 +26,4 @@ function authRoute(server: restify.Server) {
 	server.del({path: "/auth/:user", version: "3.0.0"}, routeCtrl.del);
 }
 
-// function validate(req: restify.Request, res: restify.Response, next: restify.Next) {
-// 	const authService = new Auth();
-// 	authService.validateAccessTokenMiddleware(req, res, function(success: boolean, error: ApiError) {
-// 		if (success) {
-// 			const response = {
-// 				continue: true,
-// 			};
-// 			res.json(200, response);
-// 			next();
-// 		} else {
-// 			return next(error);
-// 		}
-// 	});
-// }
-
-// function validate1(req: restify.Request, res: restify.Response, next: restify.Next) {
-// 	console.log("REAKEEEEEE");
-// }
-
 module.exports.routes = authRoute;
