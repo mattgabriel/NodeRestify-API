@@ -12,10 +12,17 @@ export class AuthEntity {
 	 */
 
 	static validateCredentials(email: string, pass: string, callback: (n: boolean, e: string, userId?: string, userRole?: number) => void): void {
-		knex.select("*").from(TABLES.Users).limit(1).then(results => {
+		knex.select("*")
+		.from(TABLES.Users)
+		.leftJoin(TABLES.UserRoles, `${TABLES.UserRoles}.UserId`, `${TABLES.Users}.UserId`)
+		.where({
+			Email: email,
+			Password: pass
+		})
+		.limit(1).then(results => {
 			if (results.length == 1) {
 				const user = results[0];
-				return callback(true, "", user.UserId, 100);
+				return callback(true, "", user.UserId, user.RoleId);
 			} else {
 				return callback(false, ErrorMsg.Auth_InvalidCredentials);
 			}
