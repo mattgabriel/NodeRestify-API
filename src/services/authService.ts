@@ -50,18 +50,14 @@ export class Auth {
 			// With refresh token
 			try {
 				const refresh_token = this.parseBearerToken(req);
-				try {
-					const validated = this.setRefreshTokenObject(refresh_token);
-					this._accessToken = this.token.generateAccessToken(this._refreshTokenObject.userId);
-					this._userId = this._refreshTokenObject.userId;
-					// this.useRole = this._refreshTokenObject.userRole;
-					// contains the same refresh token as provided by the user
-					// no need to create a new refresh token a
-					this._refreshToken = refresh_token;
-					return callback(true);
-				} catch (err) {
-					return callback(false, ApiError.httpResponse(err, ErrorCode.UnauthorizedError) );
-				}
+				const validated = this.setRefreshTokenObject(refresh_token);
+				this._accessToken = this.token.generateAccessToken(this._refreshTokenObject.userId);
+				this._userId = this._refreshTokenObject.userId;
+				// this.useRole = this._refreshTokenObject.userRole;
+				// contains the same refresh token as provided by the user
+				// no need to create a new refresh token a
+				this._refreshToken = refresh_token;
+				return callback(true);
 			} catch (err) {
 				return callback(false, ApiError.httpResponse(ErrorMsg.Auth_InvalidCredentials, ErrorCode.UnauthorizedError) );
 			}

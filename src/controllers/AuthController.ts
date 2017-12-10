@@ -8,7 +8,7 @@ export default class AuthController {
 
 	/**
 	 *
-	 * curl -H 'Content-Type: Application/json' -X GET "http://localhost:3000/anythingElse" -H 'AUTHORIZATION: Bearer <accessToken>'
+	 * curl -H 'Content-Type: Application/json' -X GET "http://localhost:3000/auth/test" -H 'AUTHORIZATION: Bearer <accessToken>'
 	 * curl -H 'Content-Type: Application/json' -X POST "http://localhost:3000/auth/accessToken" -d '{"refreshToken": <refreshToken>}'
 	 * curl -H 'Content-Type: Application/json' -X POST "http://localhost:3000/auth/login" -d '{"email":"ms@gmx.de","password":"c21f969b5f03d33d43e04f8f136e7682"}'
 	 *

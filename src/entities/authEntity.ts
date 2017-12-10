@@ -2,8 +2,7 @@ import { config } from "../config/config";
 import { ApiError, ErrorCode, ErrorMsg } from "../helpers/apiErrors";
 import { Dates } from "../helpers/dates";
 import { Users } from "../db/Users";
-import { AuthTokens } from "../db/AuthTokens";
-import { UserTokens } from "../db/UserTokens"; // Legacy
+import { knex, TABLES } from "../config/db";
 
 export class AuthEntity {
 
@@ -13,20 +12,17 @@ export class AuthEntity {
 	 */
 
 	static validateCredentials(email: string, pass: string, callback: (n: boolean, e: string, userId?: string, userRole?: number) => void): void {
-
-		Users.findOne({ where: {Email: email, Password: pass} }).then(response => {
-			if (response) {
-				const user = response as Users;
-				// TODO: set the correct userRole
-				callback(true, "", user.UserId, 100);
+		knex.select("*").from(TABLES.Users).limit(1).then(results => {
+			if (results.length == 1) {
+				const user = results[0];
+				return callback(true, "", user.UserId, 100);
 			} else {
-				callback(false, ErrorMsg.Auth_InvalidCredentials);
+				return callback(false, ErrorMsg.Auth_InvalidCredentials);
 			}
 		}).catch(function(err) {
-			callback(false, ErrorMsg.Auth_InvalidCredentials);
+			return callback(false, ErrorMsg.Auth_InvalidCredentials);
 		});
 	}
-
 
 
 	/**
@@ -38,16 +34,17 @@ export class AuthEntity {
 	 */
 
 	static validateRefreshToken(jti: string, userId: string, callback: (s: boolean, e?: ErrorMsg) => void): void {
-		AuthTokens.findOne({
-			where: { UserId: userId, TokenId: jti }
-		}).then(response => {
-			if (response) {
-				callback(true);
+		knex.select("*").from(TABLES.AuthTokens).where({
+			UserId: userId,
+			TokenId: jti
+		}).limit(1).then(results => {
+			if (results.length == 1) {
+				return callback(true);
 			} else {
-				callback(false, ErrorMsg.Auth_InvalidToken);
+				return callback(false, ErrorMsg.Auth_InvalidToken);
 			}
 		}).catch(function(err) {
-			callback(false, ErrorMsg.Auth_InvalidToken);
+			return callback(false, ErrorMsg.Auth_InvalidToken);
 		});
 	}
 
@@ -61,12 +58,15 @@ export class AuthEntity {
 	 */
 
 	static storeRefreshToken(userId: string, tokenId: string, tokenIdLegacy: string, callback: (s: boolean, e?: ErrorMsg) => void): void {
-		const create = AuthTokens.create({
+		knex(TABLES.AuthTokens).insert({
 			UserId: userId,
 			TokenId: tokenId,
 			Created: Dates.now(),
 			Expiry: Dates.nowPlusSeconds(60 * 60 * 24 * 365) // 1 year in the future
-		}).then(function(row) {
+		})
+		.then(function(result) {
+			return result;
+		}).then(function(result) {
 
 			// legacy call, can be removed once API v2 is no longer in use
 			AuthEntity.storeRefreshTokenLegacy(userId, tokenIdLegacy, function(s: boolean, e?: ErrorMsg) {
@@ -75,7 +75,7 @@ export class AuthEntity {
 			});
 
 		}).catch(function(err) {
-			callback(false, ErrorMsg.General_DatabaseError);
+			return callback(false, ErrorMsg.General_DatabaseError);
 		});
 	}
 
@@ -88,56 +88,18 @@ export class AuthEntity {
 	 */
 
 	static storeRefreshTokenLegacy(userId: string, tokenId: string, callback: (s: boolean, e?: ErrorMsg) => void): void {
-		const create = UserTokens.create({
+		knex(TABLES.UserTokens).insert({
 			UserId: userId,
 			TokenId: tokenId,
 			Expiry: Dates.nowPlusSeconds(60 * 60 * 24 * 365) // 1 year in the future
-		}).then(function(row) {
-			callback(true);
+		})
+		.then(function(result) {
+			return callback(true);
 		}).catch(function(err) {
-			callback(false, ErrorMsg.General_DatabaseError);
+			return callback(false, ErrorMsg.General_DatabaseError);
 		});
 	}
 
-
-// Users.findOne().then(response => {
-// 	const user = response as Users;
-// 	const x = user.Email as string;
-// 	console.log(user.Email);
-// 	console.log(x);
-// });
-
-
-// Users.findAll({ attributes: ["FirstName"] }).then(response => {
-// 	response.forEach(function(item) {
-// 		const user = item as Users;
-// 		console.log(user.FirstName);
-// 		console.log(item.getDataValue("FirstName"));
-// 	});
-// });
-
-
-// const create = Users.create({
-// 	Email: "test@x.com",
-// 	FirstName: "matt",
-// 	LastName: "test",
-// 	UserId: "abcde",
-// 	Password: "someSecureEncryptedPasswordHere"
-// }).then(function(user) {
-// 	console.log(user);
-// }).catch(function(err) {
-// 	// notNull Violation: Users.UserId cannot be null
-// 	// Validation error (when trying to add a duplicate email/userId)
-// 	console.log(err.message);
-// });
-
-// try {
-// 	const user = Users.findOne({ where: {Email: email, Password: pass} });
-// 	console.log("good");
-// 	console.log(user);
-// } catch (err) {
-// 	console.log("error");
-// }
 
 }
 

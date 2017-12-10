@@ -2,7 +2,6 @@ import * as restify from "restify";
 import authController from "../controllers/AuthController";
 import { ApiError, ErrorCode, ErrorMsg } from "../helpers/apiErrors";
 import { AuthMiddleware } from "../services/authService";
-// const authService = new Auth();
 
 /**
  * @api {get} /auth Auth

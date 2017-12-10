@@ -1,37 +1,34 @@
-import { Sequelize, Table, Column, Model, HasMany } from "sequelize-typescript";
+import { Random } from "../helpers/random";
 
+export class Users {
 
-// https://github.com/RobinBuschmann/sequelize-typescript
-@Table({
-	timestamps: false,
-	tableName: "Users"
-})
-export class Users extends Model<Users> {
+	constructor(UserId: string = "") {
+		if (UserId == "") {
+			this.UserId = Random.string(5);
+		}
+	}
 
-	@Column({ primaryKey: true, allowNull: false, unique: true })
-	UserId: string;
+	public UserId: string;
 
-	@Column({ allowNull: false, unique: true })
-	Email: string;
+	private _Email: string;
+	get Email(): string {
+		return this._Email;
+	}
+	set Email(value: string) {
+		this._Email = value.toLowerCase();
+	}
 
-	@Column({ defaultValue: "c21f969b5f03d33d43e04f8f136e7682", allowNull: false })
-	Password: string;
+	public Password: string = "c21f969b5f03d33d43e04f8f136e7682"; // md5: default
 
-	@Column
-	FirstName: string;
+	public FirstName: string;
 
-	@Column
-	LastName: string;
+	public LastName: string;
 
-	@Column({ defaultValue: undefined })
-	ImageUrl: string;
+	public ImageUrl: string;
 
-	@Column({ defaultValue: 0 })
-	Position: number;
+	public Position: number = 0;
 
-	@Column({ defaultValue: undefined, unique: true })
-	FacebookId: string;
+	public FacebookId: string;
 
-	@Column({ defaultValue: 0 })
-	UserType: number;
+	public UserType: number = 0;
 }

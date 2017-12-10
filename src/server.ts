@@ -6,8 +6,9 @@ import * as corsMiddleware from "restify-cors-middleware";
 import * as serveStatic from "serve-static-restify";
 import * as fs from "fs";
 import * as conf from "./config/config";
-import { sequelize } from "./config/sequelize";
+import { knex, TABLES } from "./config/db";
 const jwt = require("restify-jwt");
+import { Users } from "./db/Users";
 
 
 console.log("┌-----------------------------------");
@@ -23,23 +24,6 @@ const cors = corsMiddleware({
 
 
 (async () => {
-
-	/**
-	 * Connect to PostgreSQL:
-	 * await sequelize;
-	 *
-	 * Connect and authenticate
-	 * await sequelize.authenticate()
-	 *
-	 * Connect and synchronise with your models.
-	 * await sequelize.sync()
-	 *  NOTE: this will create new tables if they don't exit
-	 *
-	 * Connect and synchronise with your models (Force)
-	 * await sequelize.sync({ force: true });
-	 *  NOTE: this will drop all tables and data then create the tables again
-	 */
-	await sequelize;
 
 	// Create server instance
 	const server = restify.createServer({
